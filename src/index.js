@@ -143,7 +143,7 @@ export default {
                 Date.now() - lastUpdate;
 
             return json({
-                online: age < 10000,
+                online: age < 30000,
                 age: age
             });
         }
