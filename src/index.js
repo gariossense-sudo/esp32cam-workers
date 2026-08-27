@@ -78,12 +78,10 @@ export default {
             latestFrame = image;
             lastUpdate = Date.now();
             //Simpan waktu terakhir upload ke KV
-            await env.CAMERA_KV.put(
-                "lastUpdate",
-                String(lastUpdate)
-             );
-                
-
+    await env.CAMERA_KV.put(
+    "lastUpdate",
+    String(lastUpdate)
+);
             return json({
                 success: true,
                 size: image.byteLength
