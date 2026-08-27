@@ -2,4 +2,12 @@
   "name": "esp32cam-worker",
   "main": "src/index.js",
   "compatibility_date": "2026-08-25"
+
+"kv_namespaces": [
+    {
+      "binding": "CAMERA_KV",
+      "id": "ISI_NAMESPACE_ID_DI_SINI"
+    }
+  ]
+}
 }
