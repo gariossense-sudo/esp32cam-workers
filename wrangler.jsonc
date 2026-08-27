@@ -1,5 +1,21 @@
 {
   "name": "esp32cam-worker",
   "main": "src/index.js",
-  "compatibility_date": "2026-08-25"
+  "compatibility_date": "2026-08-25",
+
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CAMERA",
+        "class_name": "CameraDO"
+      }
+    ]
+  },
+
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["CameraDO"]
+    }
+  ]
 }
