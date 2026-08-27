@@ -4,7 +4,7 @@ let latestFrame = null;
 let lastUpdate = 0;
 
 export default {
-    async fetch(request) {
+    async fetch(request, env) {
 
         const url = new URL(request.url);
 
@@ -77,6 +77,12 @@ export default {
 
             latestFrame = image;
             lastUpdate = Date.now();
+            //Simpan waktu terakhir upload ke KV
+            await env.CAMERA_KV.put(
+                "lastUpdate",
+                String(lastUpdate)
+             );
+                
 
             return json({
                 success: true,
@@ -127,26 +133,32 @@ export default {
         // STATUS
         // =========================
 
-        if (
-            request.method === "GET" &&
-            url.pathname === "/api/status"
-        ) {
+if (
+    request.method === "GET" &&
+    url.pathname === "/api/status"
+) {
 
-            if (lastUpdate === 0) {
-                return json({
-                    online: false,
-                    age: null
-                });
-            }
+    const savedLastUpdate =
+        await env.CAMERA_KV.get(
+            "lastUpdate"
+        );
 
-            const age =
-                Date.now() - lastUpdate;
+    if (!savedLastUpdate) {
+        return json({
+            online: false,
+            age: null
+        });
+    }
 
-            return json({
-                online: age < 10000,
-                age: age
-            });
-        }
+    const age =
+        Date.now() -
+        Number(savedLastUpdate);
+
+    return json({
+        online: age < 30000,
+        age: age
+    });
+}
 
 
         return json(
