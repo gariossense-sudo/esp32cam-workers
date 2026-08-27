@@ -1,10 +1,10 @@
 const CAMERA_TOKEN = "ESP32CAM_2026_QWERTYU1";
 
-const FRAME_KEY = "latest_frame";
-const STATUS_KEY = "last_update";
+let latestFrame = null;
+let lastUpdate = 0;
 
 export default {
-    async fetch(request, env) {
+    async fetch(request) {
 
         const url = new URL(request.url);
 
@@ -27,6 +27,7 @@ export default {
             );
         }
 
+
         // =========================
         // HEALTH
         // =========================
@@ -37,6 +38,7 @@ export default {
         ) {
             return new Response("OK");
         }
+
 
         // =========================
         // UPLOAD ESP32-CAM
@@ -73,26 +75,15 @@ export default {
                 );
             }
 
-            // Simpan waktu upload ke KV
-            const now = Date.now();
-
-            await env.CAMERA_KV.put(
-                STATUS_KEY,
-                String(now)
-            );
-
-            // Simpan frame terbaru ke KV
-            await env.CAMERA_KV.put(
-                FRAME_KEY,
-                image
-            );
+            latestFrame = image;
+            lastUpdate = Date.now();
 
             return json({
                 success: true,
-                size: image.byteLength,
-                timestamp: now
+                size: image.byteLength
             });
         }
+
 
         // =========================
         // FRAME
@@ -103,13 +94,7 @@ export default {
             url.pathname === "/api/frame"
         ) {
 
-            const frame =
-                await env.CAMERA_KV.get(
-                    FRAME_KEY,
-                    "arrayBuffer"
-                );
-
-            if (!frame) {
+            if (latestFrame === null) {
                 return json(
                     {
                         error:
@@ -120,7 +105,7 @@ export default {
             }
 
             return new Response(
-                frame,
+                latestFrame,
                 {
                     headers: {
                         "Content-Type":
@@ -137,6 +122,7 @@ export default {
             );
         }
 
+
         // =========================
         // STATUS
         // =========================
@@ -146,12 +132,7 @@ export default {
             url.pathname === "/api/status"
         ) {
 
-            const lastUpdate =
-                await env.CAMERA_KV.get(
-                    STATUS_KEY
-                );
-
-            if (!lastUpdate) {
+            if (lastUpdate === 0) {
                 return json({
                     online: false,
                     age: null
@@ -159,14 +140,14 @@ export default {
             }
 
             const age =
-                Date.now() -
-                Number(lastUpdate);
+                Date.now() - lastUpdate;
 
             return json({
-                online: age < 30000,
+                online: age < 10000,
                 age: age
             });
         }
+
 
         return json(
             {
@@ -295,6 +276,7 @@ Menunggu kamera...
 </button>
 
 </div>
+
 
 <script>
 
